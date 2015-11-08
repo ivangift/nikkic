@@ -54,12 +54,14 @@ function changeCategory() {
     option.value = i;
     dropdown.add(option);
   }
+  updateParam();
 }
 
 function selectPattern() {
   var category = $("#category").val();
   var id = $("#pattern").val();
   drawTable(category, id);
+  updateParam();
 }
 
 function thead() {
@@ -135,8 +137,25 @@ function drawTable(category, id) {
 }
 
 function init() {
+  var category = url("#category");
+  var pattern = url("#pattern");
   calcDependencies();
   drawCategory();
+  if (patternSet[category]) {
+    $("#category").val(category);
+    changeCategory();
+    if (patternSet[category][pattern]) {
+      $("#pattern").val(pattern);
+      selectPattern();
+    }
+  }
+}
+
+function updateParam() {
+  var category = $("#category").val();
+  var pattern = $("#pattern").val();
+  var param = "category="+category + "&pattern=" + pattern;
+  window.location.href = "#" + param;
 }
 
 $(document).ready(function() {
