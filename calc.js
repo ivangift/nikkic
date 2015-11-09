@@ -93,8 +93,9 @@ function thead() {
     + "</tr></thead>";
 }
 
-function calcNum(numParent, num) {
-  return numParent * (num-1) + 1;
+function calcNum(numParent, num, keep) {
+  var kept = keep ? 1 : 0;
+  return numParent * (num - kept) + kept;
 }
 
 function deps(category, id, num, layer) {
@@ -104,7 +105,7 @@ function deps(category, id, num, layer) {
   if (patternSet[category] && patternSet[category][id]) {
     for (var i in patternSet[category][id]) {
       var source = patternSet[category][id][i];
-      var reqNum = calcNum(num, source.number)
+      var reqNum = calcNum(num, source.number, true)
       ret.push(Resource(source.category, source.id, reqNum, layer + 1));
       ret = ret.concat(deps(source.category, source.id, reqNum, layer + 1));
     }
@@ -112,13 +113,13 @@ function deps(category, id, num, layer) {
   var evol = parseSource(c.source, '进');
   if (evol && clothesSet[c.type.mainType][evol]) {
     var x = evolveSet[c.type.mainType][id].number;
-    var reqNum = calcNum(num, x);
+    var reqNum = calcNum(num, x, true);
     ret.push(Resource(c.type.mainType, evol, reqNum, layer + 1));
     ret = ret.concat(deps(c.type.mainType, evol, reqNum, layer + 1));
   }
   var remake = parseSource(c.source, '定');
   if (remake && clothesSet[c.type.mainType][remake]) {
-    var reqNum = calcNum(num, 1);
+    var reqNum = calcNum(num, 1, false);
     ret.push(Resource(c.type.mainType, remake, reqNum, layer + 1));
     ret = ret.concat(deps(c.type.mainType, remake, reqNum, layer + 1));
   }
