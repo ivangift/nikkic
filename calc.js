@@ -16,13 +16,14 @@ var patternSet = function() {
     var targetId = pattern[i][1];
     var sourceCate = pattern[i][2];
     var sourceId = pattern[i][3];
+    var num = pattern[i][4];
     if (!ret[targetCate]) {
       ret[targetCate] = {};
     }
     if (!ret[targetCate][targetId]) {
       ret[targetCate][targetId] = [];
     }
-    ret[targetCate][targetId].push(Resource(sourceCate, sourceId, 3/* mock data */, 0));
+    ret[targetCate][targetId].push(Resource(sourceCate, sourceId, num, 0));
   }
   return ret;
 }();
@@ -49,6 +50,7 @@ function changeCategory() {
   option.hidden = "hidden";
   dropdown.add(option);
   for (var i in patternSet[category]) {
+    if (!clothesSet[category][i]) continue;
     var option = document.createElement('option');
     option.text = clothesSet[category][i].name;
     option.value = i;
