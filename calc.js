@@ -28,6 +28,22 @@ var patternSet = function() {
   return ret;
 }();
 
+var evolveSet = function() {
+  ret = {}
+  for (var i in evolve) {
+    var targetCate = evolve[i][0];
+    var targetId = evolve[i][1];
+    var sourceCate = evolve[i][2];
+    var sourceId = evolve[i][3];
+    var num = evolve[i][4];
+    if (!ret[targetCate]) {
+      ret[targetCate] = {};
+    }
+    ret[targetCate][targetId] = Resource(sourceCate, sourceId, num, 0);
+  }
+  return ret;
+}();
+
 function drawCategory() {
   var dropdown = $("#category")[0];
   for (var category in patternSet) {
@@ -95,7 +111,8 @@ function deps(category, id, num, layer) {
   }
   var evol = parseSource(c.source, '进');
   if (evol && clothesSet[c.type.mainType][evol]) {
-    var reqNum = calcNum(num, 4 /* mock data */);
+    var x = evolveSet[c.type.mainType][id].number;
+    var reqNum = calcNum(num, x);
     ret.push(Resource(c.type.mainType, evol, reqNum, layer + 1));
     ret = ret.concat(deps(c.type.mainType, evol, reqNum, layer + 1));
   }
