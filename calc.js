@@ -137,7 +137,9 @@ function row(resource) {
       + "<td>" + resource.category + "</td>"
       + "<td>" + resource.id + "</td>"
       + "<td>" + c.source + "</td>"
-      + "<td>" + "--TBD-- " + "</td>"
+      + "<td>" + "<input id='" + resource.category + resource.id
+          + "' type='textbox' size=5 onchange='updateInventory(\""
+          + resource.category + "\",\"" + resource.id + "\")'/>" + "</td>"
       + "<td>" + resource.number + "</td>"
       + "</tr>";
 }
@@ -176,6 +178,14 @@ function updateParam() {
   var pattern = $("#pattern").val();
   var param = "category="+category + "&pattern=" + pattern;
   window.location.href = "#" + param;
+}
+
+function updateInventory(category, id) {
+  var num = parseInt($("#" + category + id).val());
+  if (!num) {
+    num = 0;
+  }
+  $("#" + category + id).val(num);
 }
 
 $(document).ready(function() {
