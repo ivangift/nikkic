@@ -5,7 +5,9 @@ Resource = function(category, id, number, layer) {
     category: category,
     id: id,
     number: number,
-    layer: layer
+    layer: layer,
+    inventory: 0,
+    deps: []
   }
 }
 
@@ -94,34 +96,59 @@ function thead() {
 }
 
 function calcNum(numParent, num, keep) {
+  if (numParent == 0) return 0; // after all, you don't need any deps if goal is already fulfilled
   var kept = keep ? 1 : 0;
   return numParent * (num - kept) + kept;
 }
 
-function deps(category, id, num, layer) {
+function createOrUpdate(category, id, num, layer) {
+  if (!resourceSet[category]) {
+    resourceSet[category] = {};
+  }
+  if (!resourceSet[category][id]) {
+    resourceSet[category][id] = Resource(category, id, num, layer)
+  }
+  resourceSet[category][id].number = num;
+  resourceSet[category][id].layer = layer;
+  resourceSet[category][id].deps = [];
+  return resourceSet[category][id];
+}
+
+function deps(parent) {
+  var category = parent.category;
+  var id = parent.id;
+  var num = Math.max(parent.number - parent.inventory, 0);
+  var layer = parent.layer;
   var ret = [];
   var c = clothesSet[category][id];
 
   if (patternSet[category] && patternSet[category][id]) {
     for (var i in patternSet[category][id]) {
       var source = patternSet[category][id][i];
-      var reqNum = calcNum(num, source.number, true)
-      ret.push(Resource(source.category, source.id, reqNum, layer + 1));
-      ret = ret.concat(deps(source.category, source.id, reqNum, layer + 1));
+      var reqNum = calcNum(num, source.number, true);
+      var child = createOrUpdate(source.category, source.id, reqNum, layer + 1);
+      parent.deps.push(child);
+      ret.push(child);
+      ret = ret.concat(deps(child));
     }
   }
   var evol = parseSource(c.source, '进');
   if (evol && clothesSet[c.type.mainType][evol]) {
     var x = evolveSet[c.type.mainType][id].number;
     var reqNum = calcNum(num, x, true);
-    ret.push(Resource(c.type.mainType, evol, reqNum, layer + 1));
-    ret = ret.concat(deps(c.type.mainType, evol, reqNum, layer + 1));
+    var child = createOrUpdate(c.type.mainType, evol, reqNum, layer + 1);
+    parent.deps.push(child);
+    ret.push(child);
+    ret = ret.concat(deps(child));
+    
   }
   var remake = parseSource(c.source, '定');
   if (remake && clothesSet[c.type.mainType][remake]) {
     var reqNum = calcNum(num, 1, false);
-    ret.push(Resource(c.type.mainType, remake, reqNum, layer + 1));
-    ret = ret.concat(deps(c.type.mainType, remake, reqNum, layer + 1));
+    var child = createOrUpdate(c.type.mainType, remake, reqNum, layer + 1);
+    parent.deps.push(child);
+    ret.push(child);
+    ret = ret.concat(deps(child));
   }
   return ret;
 }
@@ -132,15 +159,14 @@ function row(resource) {
   for (var i = 0; i < resource.layer; i ++) {
     name = "&nbsp;&nbsp;" + name;
   }
-  return "<tr>"
+  return "<tr id='" + resource.category + resource.id +"'>"
       + "<td>" + name + "</td>"
       + "<td>" + resource.category + "</td>"
       + "<td>" + resource.id + "</td>"
       + "<td>" + c.source + "</td>"
-      + "<td>" + "<input id='" + resource.category + resource.id
-          + "' type='textbox' size=5 onchange='updateInventory(\""
+      + "<td>" + "<input type='textbox' size=5 onchange='updateInventory(\""
           + resource.category + "\",\"" + resource.id + "\")'/>" + "</td>"
-      + "<td>" + resource.number + "</td>"
+      + "<td class='number'>" + resource.number + "</td>"
       + "</tr>";
 }
 
@@ -152,9 +178,12 @@ function tbody(resources) {
   return "<tbody>" + ret + "</tbody>";
 }
 
+var root;
+var resourceSet = {};
 function drawTable(category, id) {
   var ret = thead();
-  ret = ret + tbody(deps(category, id, 1, 0));
+  root = Resource(category, id, 1, 0);
+  ret = ret + tbody(deps(root));
   $("#table").html("<table>" + ret + "</table>");
 }
 
@@ -180,12 +209,23 @@ function updateParam() {
   window.location.href = "#" + param;
 }
 
+function render(node) {
+  $("#" + node.category + node.id + " .number").text(Math.max(node.number - node.inventory, 0));
+  for (var i in node.deps) {
+    render(node.deps[i])
+  }
+}
+
 function updateInventory(category, id) {
-  var num = parseInt($("#" + category + id).val());
+  var input = $("#" + category + id + " input");
+  var num = parseInt(input.val());
   if (!num) {
     num = 0;
   }
-  $("#" + category + id).val(num);
+  input.val(num);
+  resourceSet[category][id].inventory = num;
+  deps(resourceSet[category][id]);
+  render(resourceSet[category][id]);
 }
 
 $(document).ready(function() {
