@@ -1,4 +1,12 @@
 // calc.js
+var cost = {
+  '1': {evolve: 1200, pattern: 800},
+  '2': {evolve: 2400, pattern: 1200},
+  '3': {evolve: 4000, pattern: 2000},
+  '4': {evolve: 7000, pattern: 4000},
+  '5': {evolve: 12000, pattern: 8000},
+  '6': {evolve: 20000, pattern: 20000},
+};
 
 Resource = function(category, id, number, layer) {
   return {
@@ -7,6 +15,8 @@ Resource = function(category, id, number, layer) {
     number: number,
     layer: layer,
     inventory: 0,
+    cost: 0,
+    unit: 'N/A',
     deps: []
   }
 }
@@ -42,6 +52,22 @@ var evolveSet = function() {
       ret[targetCate] = {};
     }
     ret[targetCate][targetId] = Resource(sourceCate, sourceId, num, 0);
+  }
+  return ret;
+}();
+
+var convertSet = function() {
+  ret = {}
+  for (var i in convert) {
+    var targetCate = convert[i][0];
+    var targetId = convert[i][1];
+    var source = convert[i][2];
+    var price = convert[i][3];
+    var num = convert[i][4];
+    if (!ret[targetCate]) {
+      ret[targetCate] = {};
+    }
+    ret[targetCate][targetId] = {source: source, price: price, num: num};
   }
   return ret;
 }();
@@ -92,6 +118,7 @@ function thead() {
     + "<th>来源</th>"
     + "<th>拥有数量</th>"
     + "<th>需求数量</th>"
+    + "<th>获取成本</th>"
     + "</tr></thead>";
 }
 
@@ -123,6 +150,8 @@ function deps(parent) {
   var c = clothesSet[category][id];
 
   if (patternSet[category] && patternSet[category][id]) {
+    parent.cost = num * cost[c.stars].pattern;
+    parent.unit = '金币';
     for (var i in patternSet[category][id]) {
       var source = patternSet[category][id][i];
       var reqNum = calcNum(num, source.number, true);
@@ -134,6 +163,8 @@ function deps(parent) {
   }
   var evol = parseSource(c.source, '进');
   if (evol && clothesSet[c.type.mainType][evol]) {
+    parent.cost = num * cost[clothesSet[c.type.mainType][evol].stars].evolve;
+    parent.unit = '金币';
     var x = evolveSet[c.type.mainType][id].number;
     var reqNum = calcNum(num, x, true);
     var child = createOrUpdate(c.type.mainType, evol, reqNum, layer + 1);
@@ -144,6 +175,8 @@ function deps(parent) {
   }
   var remake = parseSource(c.source, '定');
   if (remake && clothesSet[c.type.mainType][remake]) {
+    parent.cost = num * convertSet[category][id].num * convertSet[category][id].price;
+    parent.unit = '星光币';
     var reqNum = calcNum(num, 1, false);
     var child = createOrUpdate(c.type.mainType, remake, reqNum, layer + 1);
     parent.deps.push(child);
@@ -167,6 +200,7 @@ function row(resource) {
       + "<td>" + "<input type='textbox' size=5 onchange='updateInventory(\""
           + resource.category + "\",\"" + resource.id + "\")'/>" + "</td>"
       + "<td class='number'>" + resource.number + "</td>"
+      + "<td class='cost'>" + (resource.cost == 0 ? '-' : (resource.cost + resource.unit)) + "</td>"
       + "</tr>";
 }
 
@@ -211,6 +245,7 @@ function updateParam() {
 
 function render(node) {
   $("#" + node.category + node.id + " .number").text(Math.max(node.number - node.inventory, 0));
+  $("#" + node.category + node.id + " .cost").text((node.cost == 0 ? '-' : (node.cost + node.unit)));
   for (var i in node.deps) {
     render(node.deps[i])
   }

@@ -4,6 +4,7 @@ import csv
 PATH = 'raw'
 
 evolve = 'evolve.csv'
+convert = 'convert.csv'
 
 def compatibility(name):
   if name == '上衣':
@@ -21,5 +22,18 @@ for row in reader:
   hint_source = row[3]
   num = row[4]
   writer.write("  ['%s', '%s', '%s', '%s', '%s'],\n" % (target, hint_target, source, hint_source, num))
+writer.write("];")
+writer.close()
+
+writer = open('convert.js', 'w');
+reader = csv.reader(open(PATH + "/" + convert))
+writer.write("var convert = [\n")
+for row in reader:
+  target = compatibility(row[0])
+  hint_target = row[1]
+  source = compatibility(row[2])
+  price = row[3]
+  num = row[4]
+  writer.write("  ['%s', '%s', '%s', '%s', '%s'],\n" % (target, hint_target, source, price, num))
 writer.write("];")
 writer.close()
