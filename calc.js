@@ -183,33 +183,29 @@ function deps(parent) {
     ret.push(child);
     ret = ret.concat(deps(child));
   }
+  if (c.price) {
+    parent.cost = c.price * num;
+    parent.unit = c.unit;
+  }
+  if (c.source.indexOf('公') > 0) {
+    parent.cost = num * 18; // on average 1 out of 3
+    parent.unit = "体力";
+  }
+  var sources = c.source.split("/");
+  var limited = 0;
+  for (var i in sources) {
+    if (sources[i].indexOf('公') > 0) {
+      limited ++;
+    }
+    if (sources[i].indexOf('少') > 0) {
+      parent.cost = num * 20; // on average 1 out of 5
+      parent.unit = "体力";
+      limited = -1; // no limit
+      break;
+    }
+  }
+  
   return ret;
-}
-
-function row(resource) {
-  var c = clothesSet[resource.category][resource.id];
-  var name = c.name;
-  for (var i = 0; i < resource.layer; i ++) {
-    name = "&nbsp;&nbsp;" + name;
-  }
-  return "<tr id='" + resource.category + resource.id +"'>"
-      + "<td>" + name + "</td>"
-      + "<td>" + resource.category + "</td>"
-      + "<td>" + resource.id + "</td>"
-      + "<td>" + c.source + "</td>"
-      + "<td>" + "<input type='textbox' size=5 onchange='updateInventory(\""
-          + resource.category + "\",\"" + resource.id + "\")'/>" + "</td>"
-      + "<td class='number'>" + resource.number + "</td>"
-      + "<td class='cost'>" + (resource.cost == 0 ? '-' : (resource.cost + resource.unit)) + "</td>"
-      + "</tr>";
-}
-
-function tbody(resources) {
-  var ret = "";
-  for (var i in resources) {
-    ret += row(resources[i]);
-  }
-  return "<tbody>" + ret + "</tbody>";
 }
 
 var root;
@@ -217,14 +213,31 @@ var resourceSet = {};
 function drawTable(category, id) {
   var ret = thead();
   root = Resource(category, id, 1, 0);
-  ret = ret + tbody(deps(root));
-  $("#table").html("<table>" + ret + "</table>");
+  $("#table").html("<table id='table'>"+ ret+"<tbody></tbody></table>");
+  deps(root);
+  for (var i in root.deps) {
+    render(root.deps[i]);
+  }
+}
+
+function loadMerchant() {
+  for (var i in merchant) {
+    var category = merchant[i][0];
+    var id = merchant[i][1];
+    var price = merchant[i][2];
+    var unit = merchant[i][3];
+    if (clothesSet[category][id]) {
+      clothesSet[category][id].price = price;
+      clothesSet[category][id].unit = unit;
+    }
+  }
 }
 
 function init() {
   var category = url("#category");
   var pattern = url("#pattern");
   calcDependencies();
+  loadMerchant();
   drawCategory();
   if (patternSet[category]) {
     $("#category").val(category);
@@ -244,8 +257,28 @@ function updateParam() {
 }
 
 function render(node) {
-  $("#" + node.category + node.id + " .number").text(Math.max(node.number - node.inventory, 0));
-  $("#" + node.category + node.id + " .cost").text((node.cost == 0 ? '-' : (node.cost + node.unit)));
+  var number = Math.max(node.number - node.inventory, 0);
+  var cost = node.cost == 0 ? '-' : (node.cost + node.unit);
+  var c = clothesSet[node.category][node.id];
+  var name = c.name;
+  for (var i = 0; i < node.layer; i ++) {
+    name = "&nbsp;&nbsp;" + name;
+  }
+  if ($("#" + node.category + node.id).length == 0) {
+    $("#table tbody").append("<tr id='" + node.category + node.id +"'>"
+      + "<td>" + name + "</td>"
+      + "<td>" + node.category + "</td>"
+      + "<td>" + node.id + "</td>"
+      + "<td>" + c.source + "</td>"
+      + "<td>" + "<input type='textbox' size=5 onchange='updateInventory(\""
+          + node.category + "\",\"" + node.id + "\")'/>" + "</td>"
+      + "<td class='number'>" + number + "</td>"
+      + "<td class='cost'>" + cost + "</td>"
+      + "</tr>");
+  } else {
+    $("#" + node.category + node.id + " .number").text(number);
+    $("#" + node.category + node.id + " .cost").text(cost);
+  }
   for (var i in node.deps) {
     render(node.deps[i])
   }

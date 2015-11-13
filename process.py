@@ -5,6 +5,7 @@ PATH = 'raw'
 
 evolve = 'evolve.csv'
 convert = 'convert.csv'
+merchant = 'merchant.csv'
 
 def compatibility(name):
   if name == '上衣':
@@ -35,5 +36,18 @@ for row in reader:
   price = row[3]
   num = row[4]
   writer.write("  ['%s', '%s', '%s', '%s', '%s'],\n" % (target, hint_target, source, price, num))
+writer.write("];")
+writer.close()
+
+
+writer = open('merchant.js', 'w');
+reader = csv.reader(open(PATH + "/" + merchant))
+writer.write("var merchant = [\n")
+for row in reader:
+  target = compatibility(row[0])
+  hint_target = row[1]
+  price = row[2]
+  unit = row[3]
+  writer.write("  ['%s', '%s', '%s', '%s'],\n" % (target, hint_target, price, unit))
 writer.write("];")
 writer.close()
