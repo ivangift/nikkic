@@ -305,7 +305,6 @@ function render(node, layer) {
 }
 
 function updateInventory(category, id, value) {
-  //var input = $("." + category + id + " input");
   resourceSet[category][id].inventory = value;
   deps(resourceSet[category][id]);
   summary(root);
