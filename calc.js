@@ -8,16 +8,32 @@ var cost = {
   '6': {evolve: 20000, pattern: 20000},
 };
 
-Resource = function(category, id, number, layer) {
+Resource = function(category, id, number) {
   return {
     category: category,
     id: id,
-    number: number,
-    layer: layer,
     inventory: 0,
+    number: number,
     cost: 0,
     unit: 'N/A',
-    deps: []
+    keep: true,
+    deps: {},
+    source: {},
+    require: {},
+    addDeps: function(node, num, require) {
+      this.deps[node.category + node.id] = node;
+      node.source[this.category + this.id] = num;
+      node.require[this.category + this.id] = require;
+    },
+    getNumber: function() {
+      var n = 0;
+      var require = false;
+      for (var x in this.source) {
+        n += this.source[x];
+        require |= this.require[x];
+      }
+      return require ? n + (this.keep ? 1 : 0) : 0;
+    }
   }
 }
 
@@ -35,7 +51,7 @@ var patternSet = function() {
     if (!ret[targetCate][targetId]) {
       ret[targetCate][targetId] = [];
     }
-    ret[targetCate][targetId].push(Resource(sourceCate, sourceId, num, 0));
+    ret[targetCate][targetId].push(Resource(sourceCate, sourceId, num));
   }
   return ret;
 }();
@@ -51,7 +67,7 @@ var evolveSet = function() {
     if (!ret[targetCate]) {
       ret[targetCate] = {};
     }
-    ret[targetCate][targetId] = Resource(sourceCate, sourceId, num, 0);
+    ret[targetCate][targetId] = Resource(sourceCate, sourceId, num);
   }
   return ret;
 }();
@@ -128,25 +144,21 @@ function calcNum(numParent, num, keep) {
   return numParent * (num - kept) + kept;
 }
 
-function createOrUpdate(category, id, num, layer) {
+function createOrUpdate(category, id, keep) {
   if (!resourceSet[category]) {
     resourceSet[category] = {};
   }
   if (!resourceSet[category][id]) {
-    resourceSet[category][id] = Resource(category, id, num, layer)
+    resourceSet[category][id] = Resource(category, id); 
   }
-  resourceSet[category][id].number = num;
-  resourceSet[category][id].layer = layer;
-  resourceSet[category][id].deps = [];
+  resourceSet[category][id].keep &= keep;
   return resourceSet[category][id];
 }
 
 function deps(parent) {
   var category = parent.category;
   var id = parent.id;
-  var num = Math.max(parent.number - parent.inventory, 0);
-  var layer = parent.layer;
-  var ret = [];
+  var num = Math.max(parent.getNumber() - parent.inventory, 0);
   var c = clothesSet[category][id];
 
   if (patternSet[category] && patternSet[category][id]) {
@@ -154,11 +166,10 @@ function deps(parent) {
     parent.unit = '金币';
     for (var i in patternSet[category][id]) {
       var source = patternSet[category][id][i];
-      var reqNum = calcNum(num, source.number, true);
-      var child = createOrUpdate(source.category, source.id, reqNum, layer + 1);
-      parent.deps.push(child);
-      ret.push(child);
-      ret = ret.concat(deps(child));
+      var reqNum = calcNum(num, source.number - 1); // real number
+      var child = createOrUpdate(source.category, source.id, true /* keep last */);
+      parent.addDeps(child, reqNum, num > 0);
+      deps(child);
     }
   }
   var evol = parseSource(c.source, '进');
@@ -166,22 +177,19 @@ function deps(parent) {
     parent.cost = num * cost[clothesSet[c.type.mainType][evol].stars].evolve;
     parent.unit = '金币';
     var x = evolveSet[c.type.mainType][id].number;
-    var reqNum = calcNum(num, x, true);
-    var child = createOrUpdate(c.type.mainType, evol, reqNum, layer + 1);
-    parent.deps.push(child);
-    ret.push(child);
-    ret = ret.concat(deps(child));
-    
+    var reqNum = calcNum(num, x - 1); // real number
+    var child = createOrUpdate(c.type.mainType, evol, true /* keep last */);
+    parent.addDeps(child, reqNum, num > 0);
+    deps(child);
   }
   var remake = parseSource(c.source, '定');
   if (remake && clothesSet[c.type.mainType][remake]) {
     parent.cost = num * convertSet[category][id].num * convertSet[category][id].price;
     parent.unit = '星光币';
-    var reqNum = calcNum(num, 1, false);
-    var child = createOrUpdate(c.type.mainType, remake, reqNum, layer + 1);
-    parent.deps.push(child);
-    ret.push(child);
-    ret = ret.concat(deps(child));
+    var reqNum = calcNum(num, 1);
+    var child = createOrUpdate(c.type.mainType, remake, false /* don't keep */);
+    parent.addDeps(child, reqNum, num > 0);
+    deps(child);
   }
   if (c.price) {
     parent.cost = c.price * num;
@@ -204,19 +212,20 @@ function deps(parent) {
       break;
     }
   }
-  
-  return ret;
 }
 
 var root;
 var resourceSet = {};
 function drawTable(category, id) {
   var ret = thead();
-  root = Resource(category, id, 1, 0);
+  root = Resource(category, id);
+  root.source['request'] = 1;
+  root.require['request'] = true;
+  root.keep = 0;
   $("#table").html("<table id='table'>"+ ret+"<tbody></tbody></table>");
   deps(root);
   for (var i in root.deps) {
-    render(root.deps[i]);
+    render(root.deps[i], 0);
   }
 }
 
@@ -256,12 +265,12 @@ function updateParam() {
   window.location.href = "#" + param;
 }
 
-function render(node) {
-  var number = Math.max(node.number - node.inventory, 0);
+function render(node, layer) {
+  var number = Math.max(node.getNumber() - node.inventory, 0);
   var cost = node.cost == 0 ? '-' : (node.cost + node.unit);
   var c = clothesSet[node.category][node.id];
   var name = c.name;
-  for (var i = 0; i < node.layer; i ++) {
+  for (var i = 0; i < layer; i ++) {
     name = "&nbsp;&nbsp;" + name;
   }
   if ($("#" + node.category + node.id).length == 0) {
@@ -280,7 +289,7 @@ function render(node) {
     $("#" + node.category + node.id + " .cost").text(cost);
   }
   for (var i in node.deps) {
-    render(node.deps[i])
+    render(node.deps[i], layer+1)
   }
 }
 
@@ -293,7 +302,7 @@ function updateInventory(category, id) {
   input.val(num);
   resourceSet[category][id].inventory = num;
   deps(resourceSet[category][id]);
-  render(resourceSet[category][id]);
+  render(root, 0);
 }
 
 $(document).ready(function() {
