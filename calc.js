@@ -224,6 +224,7 @@ function drawTable(category, id) {
   root.keep = 0;
   $("#table").html("<table id='table'>"+ ret+"<tbody></tbody></table>");
   deps(root);
+  summary(root);
   for (var i in root.deps) {
     render(root.deps[i], 0);
   }
@@ -299,7 +300,7 @@ function render(node, layer) {
     $("." + node.category + node.id + " .inventory input").val(node.inventory);
   }
   for (var i in node.deps) {
-    render(node.deps[i], layer+1)
+    render(node.deps[i], layer+1);
   }
 }
 
@@ -307,7 +308,36 @@ function updateInventory(category, id, value) {
   //var input = $("." + category + id + " input");
   resourceSet[category][id].inventory = value;
   deps(resourceSet[category][id]);
-  render(root, 0);
+  summary(root);
+  for (var i in root.deps) {
+    render(root.deps[i], 0);
+  }
+}
+
+function visit(node, collector) {
+  collector[node.category + node.id] = node;
+  for (var v in node.deps) {
+    visit(node.deps[v], collector);
+  }
+}
+
+function summary(node) {
+  var collector = {};
+  visit(node, collector);
+  var sum = {};
+  for (var i in collector) {
+    if (collector[i].cost > 0) {
+      if (!sum[collector[i].unit]) {
+        sum[collector[i].unit] = 0;
+      }
+      sum[collector[i].unit] += collector[i].cost;
+    }
+  }
+  var ret = "";
+  for (var unit in sum) {
+    ret = ret + unit + ": " + sum[unit] + "<br/>";
+  }
+  $("#summary").html(ret);
 }
 
 $(document).ready(function() {
