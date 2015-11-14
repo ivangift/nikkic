@@ -1,4 +1,6 @@
 // calc.js
+var princess_rate = 3; // 3 out of 1
+
 var cost = {
   '1': {evolve: 1200, pattern: 800},
   '2': {evolve: 2400, pattern: 1200},
@@ -7,6 +9,13 @@ var cost = {
   '5': {evolve: 12000, pattern: 8000},
   '6': {evolve: 20000, pattern: 20000},
 };
+
+var generate = {
+  '金币': 96574,
+  '星光币': 45,
+  '体力': 475,
+  '水晶鞋': 1
+}
 
 Resource = function(category, id, number) {
   return {
@@ -196,7 +205,7 @@ function deps(parent) {
     parent.unit = c.unit;
   }
   if (c.source.indexOf('公') > 0) {
-    parent.cost = num * 18; // on average 1 out of 3
+    parent.cost = num * 6 * princess_rate; // on average 1 out of 3
     parent.unit = "体力";
   }
   var sources = c.source.split("/");
@@ -210,6 +219,16 @@ function deps(parent) {
       parent.unit = "体力";
       limited = -1; // no limit
       break;
+    }
+  }
+  if (limited > 0) {
+    parent.limit = num * princess_rate / limited / 3;
+  }
+  if (!parent.cost || parent.cost == 0) {
+    if (c.source.indexOf("迷") >= 0 || c.source.indexOf("幻") >= 0) {
+      parent.luck = 1;
+    } else if (c.source.indexOf("成就") >= 0) {
+      parent.effort = 1;
     }
   }
 }
@@ -244,6 +263,9 @@ function loadMerchant() {
 }
 
 function init() {
+  if (url().indexOf("ivangift") > 0) {
+    $(".announcement").text("奇迹暖暖设计图计算器. By Ivan's workshop. 在玉人的英(wei)明(bi)领(li)导(you)下总算做好了.");
+  }
   var category = url("#category");
   var pattern = url("#pattern");
   calcDependencies();
@@ -269,6 +291,9 @@ function updateParam() {
 function render(node, layer) {
   var number = Math.max(node.getNumber() - node.inventory, 0);
   var cost = node.cost == 0 ? '-' : (node.cost + node.unit);
+  if (node.limit) {
+    cost += "/" + node.limit + "天";
+  }
   var c = clothesSet[node.category][node.id];
   var name = c.name;
   for (var i = 0; i < layer; i ++) {
@@ -330,12 +355,33 @@ function summary(node) {
         sum[collector[i].unit] = 0;
       }
       sum[collector[i].unit] += collector[i].cost;
+      if (collector[i].limit) {
+        if (!sum['公主关次数限制']) {
+          sum['公主关次数限制'] = 0;
+        }
+        if (sum['公主关次数限制'] < collector[i].limit) {
+          sum['公主关次数限制'] = collector[i].limit;
+        }
+      }
+    }
+    if (collector[i].luck) {
+      sum['一些运气'] = '许多';
+    }
+    if (collector[i].effort) {
+      sum['一些努力'] = '总有一';
     }
   }
-  var ret = "";
+  var ret = "<table>";
   for (var unit in sum) {
-    ret = ret + unit + ": " + sum[unit] + "<br/>";
+    if (unit in generate) {
+      var days = Math.ceil(sum[unit] / generate[unit]);
+      ret += "<tr><td>" + unit + ": " + sum[unit] + "</td><td>" + days + "天</td></tr>";
+    } else {
+      ret += "<tr><td>" + unit + "</td><td>" + sum[unit] + "天</td></tr>";
+    }
+    
   }
+  ret += "</table>";
   $("#summary").html(ret);
 }
 
