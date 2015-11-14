@@ -273,34 +273,39 @@ function render(node, layer) {
   for (var i = 0; i < layer; i ++) {
     name = "&nbsp;&nbsp;" + name;
   }
-  if ($("#" + node.category + node.id).length == 0) {
-    $("#table tbody").append("<tr id='" + node.category + node.id +"'>"
-      + "<td>" + name + "</td>"
+  if ($("." + node.category + node.id).length < Object.keys(node.source).length) {
+    var tr = $("<tr class='" + node.category + node.id +"'>");
+    tr.append("<td>" + name + "</td>"
       + "<td>" + node.category + "</td>"
       + "<td>" + node.id + "</td>"
-      + "<td>" + c.source + "</td>"
-      + "<td>" + "<input type='textbox' size=5 onchange='updateInventory(\""
-          + node.category + "\",\"" + node.id + "\")'/>" + "</td>"
-      + "<td class='number'>" + number + "</td>"
-      + "<td class='cost'>" + cost + "</td>"
-      + "</tr>");
+      + "<td>" + c.source + "</td>");
+    var input = $("<input type='textbox' size=5 value='" + node.inventory + "'/>");
+    tr.append($("<td class='inventory'>").append(input));
+    tr.append("<td class='number'>" + number + "</td>"
+      + "<td class='cost'>" + cost + "</td>");
+    $("#table tbody").append(tr);
+
+    input.change(function() {
+      var num = parseInt($(this).val());
+      if (!num) {
+        num = 0;
+      }
+      $(this).val(num);
+      updateInventory(node.category, node.id, num);
+    });
   } else {
-    $("#" + node.category + node.id + " .number").text(number);
-    $("#" + node.category + node.id + " .cost").text(cost);
+    $("." + node.category + node.id + " .number").text(number);
+    $("." + node.category + node.id + " .cost").text(cost);
+    $("." + node.category + node.id + " .inventory input").val(node.inventory);
   }
   for (var i in node.deps) {
     render(node.deps[i], layer+1)
   }
 }
 
-function updateInventory(category, id) {
-  var input = $("#" + category + id + " input");
-  var num = parseInt(input.val());
-  if (!num) {
-    num = 0;
-  }
-  input.val(num);
-  resourceSet[category][id].inventory = num;
+function updateInventory(category, id, value) {
+  //var input = $("." + category + id + " input");
+  resourceSet[category][id].inventory = value;
   deps(resourceSet[category][id]);
   render(root, 0);
 }
