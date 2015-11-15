@@ -319,7 +319,7 @@ function render(node, layer) {
   var c = clothesSet[node.category][node.id];
   var name = c.name;
   for (var i = 0; i < layer; i ++) {
-    name = "&nbsp;&nbsp;" + name;
+    name = ">&nbsp;" + name;
   }
   if ($("." + node.category + node.id).length < Object.keys(node.source).length) {
     var tr = $("<tr class='" + node.category + node.id +"'>");
@@ -397,7 +397,7 @@ function summary(node) {
   for (var unit in sum) {
     if (unit in generate) {
       var days = Math.ceil(sum[unit] / generate[unit]);
-      ret += "<tr><td>" + unit + ": " + sum[unit] + "</td><td>" + days + "天</td></tr>";
+      ret += "<tr><td>" + unit + ": " + $.number(sum[unit]) + "</td><td>" + days + "天</td></tr>";
     } else {
       ret += "<tr><td>" + unit + "</td><td>" + sum[unit] + "天</td></tr>";
     }
