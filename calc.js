@@ -318,8 +318,11 @@ function render(node, layer) {
   }
   var c = clothesSet[node.category][node.id];
   var name = c.name;
-  for (var i = 0; i < layer; i ++) {
-    name = ">&nbsp;" + name;
+  if (layer > 0) {
+    name = "&nbsp;&#x221F;" + name;
+  }
+  for (var i = 0; i < layer-1; i ++) {
+    name = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + name;
   }
   if ($("." + node.category + node.id).length < Object.keys(node.source).length) {
     var tr = $("<tr class='" + node.category + node.id +"'>");
