@@ -30,7 +30,7 @@ var CATEGORIES = [
 ];
 
 var palette = [
-  ["#ff9999", "#ffb3b3", "#ffcccc", "#ffe5e5"],
+  ["#ff9999", "#ffb7b7", "#ffcccc", "#ffe5e5"],
   ["#ff99ff", "#ffb3ff", "#ffccff", "#ffe5ff"],
   ["#9999ff", "#b3b3ff", "#ccccff", "#e5e5ff"],
   ["#ffe599", "#ffecb3", "#fff2cc", "#fff9e5"]
