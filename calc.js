@@ -264,6 +264,7 @@ function drawTable(category, id) {
   root.require['request'] = true;
   root.keep = 0;
   $("#table").html("<table id='table'>"+ ret+"<tbody></tbody></table>");
+  resourceSet = {};
   deps(root);
   summary(root);
   for (var i in root.deps) {
