@@ -15,7 +15,19 @@ var generate = {
   '星光币': 45,
   '体力': 475,
   '水晶鞋': 1
-}
+};
+
+var CATEGORIES = [
+  '发型',
+  '连衣裙',
+  '外套',
+  '上装',
+  '下装',
+  '袜子',
+  '鞋子',
+  '饰品',
+  '妆容'
+];
 
 Resource = function(category, id, number) {
   return {
@@ -99,13 +111,18 @@ var convertSet = function() {
 
 function drawCategory() {
   var dropdown = $("#category")[0];
-  for (var category in patternSet) {
+  for (var i in CATEGORIES) {
+    var category = CATEGORIES[i];
     var option = document.createElement('option');
     option.text = category;
     option.value = category;
     dropdown.add(option);
   }
   changeCategory();
+}
+
+function byName(a, b) {
+  return a.name.localeCompare(b.name);
 }
 
 function changeCategory() {
@@ -118,11 +135,16 @@ function changeCategory() {
   option.disabled = "disabled";
   option.hidden = "hidden";
   dropdown.add(option);
+  toSort = [];
   for (var i in patternSet[category]) {
     if (!clothesSet[category][i]) continue;
+    toSort.push(clothesSet[category][i]);
+  }
+  toSort.sort(byName);
+  for (var i in toSort) {
     var option = document.createElement('option');
-    option.text = clothesSet[category][i].name;
-    option.value = i;
+    option.text = toSort[i].name;
+    option.value = toSort[i].id;
     dropdown.add(option);
   }
   updateParam();
@@ -264,7 +286,7 @@ function loadMerchant() {
 
 function init() {
   if (url().indexOf("ivangift") > 0) {
-    $(".announcement").text("奇迹暖暖设计图计算器. By Ivan's workshop. 在玉人的英(wei)明(bi)领(li)导(you)下总算做好了.");
+    $(".announcement").append("在玉人的英(wei)明(bi)领(li)导(you)下总算做好了.");
   }
   var category = url("#category");
   var pattern = url("#pattern");

@@ -11,21 +11,85 @@
     <script type='text/javascript' charset="UTF-8" src='model.js'></script>
     <script type='text/javascript' charset="UTF-8" src='convert.js'></script>
     <script type='text/javascript' charset="UTF-8" src='merchant.js'></script>
+    <script type='text/javascript' charset="UTF-8" src='pinyin.js'></script>
     <script type='text/javascript' charset="UTF-8" src='calc.js'></script>
+
+    <style>
+      body {
+        font-family: Georgia, "Times New Roman", 
+             "Microsoft YaHei", "微软雅黑", 
+             STXihei, "华文细黑", 
+             serif;
+      }
+      table{
+        margin: 10px;
+        font-size: 15px;
+      }
+
+      table th {
+        padding: 10px;
+        background: lavenderblush;
+      }
+
+      table > tbody > tr > td{
+        padding: 10px;
+        background: #f8f8f8;
+      }
+      select
+      {
+        width: 200px;
+        height: 29px;
+        border-radius: 3px;
+        border: 1px solid #CCC;
+        font-weight: 200;
+        font-size: 15px;
+        font-family: Verdana;
+        box-shadow: 1px 1px 5px #CCC;
+      }
+      select: hover
+      {
+        width: 200px;
+        height: 29px;
+        border-radius: 3px;
+        border: 1px solid #CCC;
+        font-weight: 200;
+        font-size: 15px;
+        font-family: Verdana;
+        box-shadow: 1px 1px 5px #CCC;
+      }
+      input
+      {
+        
+        height: 2em;
+        border-radius: 3px;
+        border: 1px solid #CCC;
+        padding: 8px;
+        font-weight: 200;
+        font-size: 15px;
+        font-family: Verdana;
+        box-shadow: 1px 1px 5px #CCC;
+      }
+    </style>
   </head>
   <body>
     <div class='announcement'>
-      奇迹暖暖设计图计算器. By Ivan's workshop.<br/>
-    </div>
-    <div>
-      <select id="category" onChange="changeCategory()"></select> &nbsp;
-      <select id="pattern" onChange="selectPattern()"></select>
-    </div>
-    <div id = "summary">
-
+      <h2>奇迹暖暖设计图计算器 </h2>
+      By Ivan's workshop.<br/>
     </div>
     <hr/>
-    <div id="table">
+    <div class="dropdown">
+      <select id="category" class="dropdown-select" onChange="changeCategory()"></select> &nbsp;
+      <select id="pattern" class="dropdown-select" onChange="selectPattern()"></select>
+    </div>
+    <br/>
+    <div>
+      <b>成本及时间估计</b>
+      <div id = "summary">
+
+      </div>
+    </div>
+    <hr/>
+    <div id="table" class="table">
       
     </div>
   </body>
