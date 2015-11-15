@@ -328,7 +328,7 @@ function render(node, theme, layer) {
   var c = clothesSet[node.category][node.id];
   var name = c.name;
   if (layer > 0) {
-    name = "&nbsp;&#x025B9;" + name;
+    name = "&nbsp;&nbsp;&#x025B9;" + name;
   }
   for (var i = 0; i < layer-1; i ++) {
     name = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + name;
