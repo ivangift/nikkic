@@ -29,6 +29,13 @@ var CATEGORIES = [
   '妆容'
 ];
 
+var palette = [
+  ["#ff9999", "#ffb3b3", "#ffcccc", "#ffe5e5"],
+  ["#ff99ff", "#ffb3ff", "#ffccff", "#ffe5ff"],
+  ["#9999ff", "#b3b3ff", "#ccccff", "#e5e5ff"],
+  ["#ffe599", "#ffecb3", "#fff2cc", "#fff9e5"]
+];
+
 Resource = function(category, id, number) {
   return {
     category: category,
@@ -267,8 +274,9 @@ function drawTable(category, id) {
   resourceSet = {};
   deps(root);
   summary(root);
+  var theme = 0;
   for (var i in root.deps) {
-    render(root.deps[i], 0);
+    render(root.deps[i], theme++, 0);
   }
 }
 
@@ -311,7 +319,7 @@ function updateParam() {
   window.location.href = "#" + param;
 }
 
-function render(node, layer) {
+function render(node, theme, layer) {
   var number = Math.max(node.getNumber() - node.inventory, 0);
   var cost = node.cost == 0 ? '-' : (node.cost + node.unit);
   if (node.limit) {
@@ -320,21 +328,27 @@ function render(node, layer) {
   var c = clothesSet[node.category][node.id];
   var name = c.name;
   if (layer > 0) {
-    name = "&nbsp;&#x221F;" + name;
+    name = "&nbsp;&#x025B9;" + name;
   }
   for (var i = 0; i < layer-1; i ++) {
     name = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + name;
   }
+  var color;
+  if (layer >= palette[theme].length) {
+    color = palette[theme][palette[theme].length - 1];
+  } else {
+    color = palette[theme][layer];
+  }
   if ($("." + node.category + node.id).length < Object.keys(node.source).length) {
-    var tr = $("<tr class='" + node.category + node.id +"'>");
-    tr.append("<td>" + name + "</td>"
-      + "<td>" + node.category + "</td>"
-      + "<td>" + node.id + "</td>"
-      + "<td>" + c.source + "</td>");
+    var tr = $("<tr class='" + node.category + node.id + "'>");
+    tr.append("<td style='background: " + color + "'>" + name + "</td>"
+      + "<td style='background: " + color + "'>" + node.category + "</td>"
+      + "<td style='background: " + color + "'>" + node.id + "</td>"
+      + "<td style='background: " + color + "'>" + c.source + "</td>");
     var input = $("<input type='textbox' size=5 value='" + node.inventory + "'/>");
-    tr.append($("<td class='inventory'>").append(input));
-    tr.append("<td class='number'>" + number + "</td>"
-      + "<td class='cost'>" + cost + "</td>");
+    tr.append($("<td style='background: " + color + "' class='inventory'>").append(input));
+    tr.append("<td style='background: " + color + "' class='number'>" + number + "</td>"
+      + "<td style='background: " + color + "' class='cost'>" + cost + "</td>");
     $("#table tbody").append(tr);
 
     input.change(function() {
@@ -351,7 +365,7 @@ function render(node, layer) {
     $("." + node.category + node.id + " .inventory input").val(node.inventory);
   }
   for (var i in node.deps) {
-    render(node.deps[i], layer+1);
+    render(node.deps[i], theme, layer+1);
   }
 }
 
@@ -359,8 +373,9 @@ function updateInventory(category, id, value) {
   resourceSet[category][id].inventory = value;
   deps(resourceSet[category][id]);
   summary(root);
+  var theme = 0;
   for (var i in root.deps) {
-    render(root.deps[i], 0);
+    render(root.deps[i], theme++, 0);
   }
 }
 
