@@ -275,8 +275,9 @@ function drawTable(category, id) {
   deps(root);
   summary(root);
   var theme = 0;
+  var sameTheme = resourceSize() < 20;
   for (var i in root.deps) {
-    render(root.deps[i], theme++, 0);
+    render(root.deps[i], sameTheme ? 0 : theme++, 0);
   }
 }
 
@@ -374,9 +375,20 @@ function updateInventory(category, id, value) {
   deps(resourceSet[category][id]);
   summary(root);
   var theme = 0;
+  var sameTheme = resourceSize() < 20;
   for (var i in root.deps) {
-    render(root.deps[i], theme++, 0);
+    render(root.deps[i], sameTheme ? 0 : theme++, 0);
   }
+}
+
+function resourceSize() {
+  var size = 0;
+  for (var cate in resourceSet) {
+    for (var i in resourceSet[cate]) {
+      size ++;
+    }
+  }
+  return size;
 }
 
 function visit(node, collector) {
