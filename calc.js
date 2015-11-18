@@ -296,7 +296,7 @@ function loadMerchant() {
 
 function init() {
   if (url().indexOf("ivangift") > 0) {
-    $(".announcement").append("By 玉人 and ip, proof of our existence.");
+    $(".announcement").append("By 玉人 and ip君, proof of our existence, and our memories. - Nov 2015");
   }
   var category = url("#category");
   var pattern = url("#pattern");
