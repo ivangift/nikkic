@@ -36,6 +36,46 @@ var palette = [
   ["#ff9999", "#ffb7b7", "#ffcccc", "#ffe5e5"]
 ];
 
+function Inventory() {
+  return {
+    mine: {},
+    serialize: function() {
+      var txt = "";
+      for (var type in this.mine) {
+        var x = [];
+        for (var c in this.mine[type]) {
+          x.push(c + "=" + this.mine[type][c]);
+        }
+        txt += type + ":" + x.join(',') + "|";
+      }
+      return txt;
+    },
+    deserialize: function(raw) {
+      var sections = raw.split('|');
+      this.mine = {};
+      for (var i in sections) {
+        if (sections[i].length < 1) {
+          continue;
+        }
+        var section = sections[i].split(':');
+        var type = section[0];
+        var clist = section[1].split(',');
+        this.mine[type] = [];
+        for (var j in clist) {
+          var items = clist[j].split('=');
+          this.mine[type][items[0]] = parseInt(items[1]);
+        }
+      }
+    },
+    update: function(category, id, value) {
+      if (!this.mine[category]) {
+        this.mine[category] = {};
+      }
+      this.mine[category][id] = value;
+    }
+  };
+}
+
 Resource = function(category, id, number) {
   return {
     category: category,
@@ -187,7 +227,10 @@ function createOrUpdate(category, id, keep) {
     resourceSet[category] = {};
   }
   if (!resourceSet[category][id]) {
-    resourceSet[category][id] = Resource(category, id); 
+    resourceSet[category][id] = Resource(category, id);
+    if (inventory.mine[category] && inventory.mine[category][id]) {
+      resourceSet[category][id].inventory = inventory.mine[category][id];
+    }
   }
   resourceSet[category][id].keep &= keep;
   return resourceSet[category][id];
@@ -294,6 +337,13 @@ function loadMerchant() {
   }
 }
 
+var inventory = Inventory();
+function loadInventory() {
+  if (localStorage && localStorage.clothesCount) {
+    inventory.deserialize(localStorage.clothesCount);
+  }
+}
+
 function init() {
   if (url().indexOf("ivangift") > 0) {
     $(".announcement").append("By 玉人 and ip君, proof of our existence, and our memories. - Nov 2015");
@@ -303,6 +353,7 @@ function init() {
   calcDependencies();
   loadMerchant();
   drawCategory();
+  loadInventory();
   if (patternSet[category]) {
     $("#category").val(category);
     changeCategory();
@@ -378,6 +429,11 @@ function updateInventory(category, id, value) {
   var sameTheme = resourceSize() < 20;
   for (var i in root.deps) {
     render(root.deps[i], sameTheme ? 0 : theme++, 0);
+  }
+
+  inventory.update(category, id, value);
+  if (localStorage) {
+    localStorage.clothesCount = inventory.serialize();
   }
 }
 
