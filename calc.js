@@ -262,11 +262,12 @@ function selectPattern() {
 function thead() {
   return "<thead><tr>"
     + "<th>名称</th>"
-    + "<th>分类</th>"
-    + "<th>编号</th>"
-    + "<th>来源</th>"
+    //+ "<th>分类</th>"
+    //+ "<th>编号</th>"
+    
     + "<th>拥有数量</th>"
     + "<th>需求数量</th>"
+    + "<th>来源</th>"
     + "<th>获取成本</th>"
     + "</tr></thead>";
 }
@@ -449,12 +450,13 @@ function render(node, theme, layer) {
   if ($("." + node.category + node.id).length < Object.keys(node.ref).length) {
     var tr = $("<tr class='" + node.category + node.id + "'>");
     tr.append("<td style='background: " + color + "'>" + name + "</td>"
-      + "<td style='background: " + color + "'>" + node.category + "</td>"
-      + "<td style='background: " + color + "'>" + node.id + "</td>"
-      + "<td style='background: " + color + "'>" + c.source + "</td>");
+      //+ "<td style='background: " + color + "'>" + node.category + "</td>"
+      //+ "<td style='background: " + color + "'>" + node.id + "</td>"
+      );
     var input = $("<input type='textbox' size=5 value='" + node.inventory + "'/>");
     tr.append($("<td style='background: " + color + "' class='inventory'>").append(input));
     tr.append("<td style='background: " + color + "' class='number'>" + number + "</td>"
+      + "<td style='background: " + color + "'>" + c.source + "</td>"
       + "<td style='background: " + color + "' class='cost'>" + cost + "</td>");
     $("#table tbody").append(tr);
 
