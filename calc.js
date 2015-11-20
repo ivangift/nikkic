@@ -86,18 +86,18 @@ Resource = function(category, id, number) {
     unit: 'N/A',
     keep: true,
     deps: {},
-    source: {},
+    ref: {},
     require: {},
     addDeps: function(node, num, require) {
       this.deps[node.category + node.id] = node;
-      node.source[this.category + this.id] = num;
+      node.ref[this.category + this.id] = num;
       node.require[this.category + this.id] = require;
     },
     getNumber: function() {
       var n = 0;
       var require = false;
-      for (var x in this.source) {
-        n += this.source[x];
+      for (var x in this.ref) {
+        n += this.ref[x];
         require |= this.require[x];
       }
       return require ? n + (this.keep ? 1 : 0) : 0;
@@ -294,7 +294,7 @@ function deps(parent) {
     }
   }
   if (limited > 0) {
-    parent.limit = num * princess_rate / limited / 3;
+    parent.limit = Math.ceil(num * princess_rate / limited / 3);
   }
   if (!parent.cost || parent.cost == 0) {
     if (c.source.indexOf("迷") >= 0 || c.source.indexOf("幻") >= 0) {
@@ -310,7 +310,7 @@ var resourceSet = {};
 function drawTable(category, id) {
   var ret = thead();
   root = Resource(category, id);
-  root.source['request'] = 1;
+  root.ref['request'] = 1;
   root.require['request'] = true;
   root.keep = 0;
   $("#table").html("<table id='table'>"+ ret+"<tbody></tbody></table>");
@@ -391,7 +391,7 @@ function render(node, theme, layer) {
   } else {
     color = palette[theme][layer];
   }
-  if ($("." + node.category + node.id).length < Object.keys(node.source).length) {
+  if ($("." + node.category + node.id).length < Object.keys(node.ref).length) {
     var tr = $("<tr class='" + node.category + node.id + "'>");
     tr.append("<td style='background: " + color + "'>" + name + "</td>"
       + "<td style='background: " + color + "'>" + node.category + "</td>"
@@ -458,6 +458,8 @@ function summary(node) {
   var collector = {};
   visit(node, collector);
   var sum = {};
+  var princess = [];
+  var maiden = [] ;
   for (var i in collector) {
     if (collector[i].cost > 0) {
       if (!sum[collector[i].unit]) {
@@ -479,6 +481,14 @@ function summary(node) {
     if (collector[i].effort) {
       sum['一些努力'] = '总有一';
     }
+
+    var c = clothesSet[collector[i].category][collector[i].id];
+    if (c.source.indexOf('公') > 0 && collector[i].getNumber() > collector[i].inventory) {
+      princess.push(collector[i]);
+    }
+    if (c.source.indexOf('少') > 0 && collector[i].getNumber() > collector[i].inventory) {
+      maiden.push(collector[i]);
+    }
   }
   var ret = "<table>";
   for (var unit in sum) {
@@ -492,6 +502,32 @@ function summary(node) {
   }
   ret += "</table>";
   $("#summary").html(ret);
+  $("#breakdown").empty();
+  if (princess.length > 0) {
+    $("#breakdown").append("公主关掉落列表");
+    $("#breakdown").append(taskList(princess));
+  }
+  if (maiden.length > 0) {
+    $("#breakdown").append("少女关掉落列表");
+    $("#breakdown").append(taskList(maiden));
+  }
+}
+
+function taskList(nodes) {
+  var ret = "<table><thead><tr><th>名称</th><th>来源</th><th>需要数量</th></tr></thead>";
+  ret += "<tbody>";
+  for (var i in nodes) {
+    var node = nodes[i];
+    var number = Math.max(node.getNumber() - node.inventory, 0);
+    var c = clothesSet[node.category][node.id];
+    var name = c.name;
+    var tr = "<tr><td>" + name + "</td>"
+      + "<td>" + c.source + "</td>"
+      + "<td>" + number + "</td></tr>";
+    ret += tr;
+  }
+  ret += "</tbody></table>";
+  return ret;
 }
 
 $(document).ready(function() {
