@@ -31,6 +31,9 @@
         margin-top: 0.5em;
         display:inline-block;
       }
+      div.desc {
+        margin-top: 0.5em;
+      }
 
       table{
         margin: 8px;
@@ -95,7 +98,6 @@
     <div class='announcement'>
       <h2>奇迹暖暖设计图计算器 </h2>
     </div>
-    i think it may work...
     <hr/>
     <div class="preference">
       <select id="preset" onChange="changePreset(true)"></select>
@@ -106,6 +108,7 @@
       <span class='config'>公主关购买次数 <input id="princessgen" type='textbox' onchange='updateConfig()' size=2></input></span>
       <span class='config'>公主关<input id="princessrate" type='textbox' onchange='updateConfig()' size=2></input>掉1</span>
       <span class='config'>少女关<input id="maidenrate" type='textbox' onchange='updateConfig()' size=2></input>掉1</span>
+      <div id="desc" class='desc'></div>
     </div>
     <hr/>
     <div class="dropdown">

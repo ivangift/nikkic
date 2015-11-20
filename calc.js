@@ -429,24 +429,7 @@ function drawPreset() {
 
 function changePreset(calc) {
   var choice = $("#preset").val();
-  /**
-        <span class='config'>每日获取金币 <input id="goldgen" type='textbox' size=6></input></span>
-      <span class='config'>每日获取星光币 <input id="coingen" type='textbox' size=4></input></span>
-      <span class='config'>每日获取体力 <input id="hpgen" type='textbox' size=4></input></span>
-      <span class='config'>每日获取水晶鞋 <input id="shoegen" type='textbox' size=3></input></span>
-      <span class='config'>公主关购买次数 <input id="princessgen" type='textbox' size=2></input></span>
-      <span class='config'>公主关<input id="princessrate" type='textbox' size=2></input>掉1</span>
-      <span class='config'>少女关<input id="maidenrate" type='textbox' size=2></input>掉1</span>
-generate: {
-      '金币': 96574,
-      '星光币': 45,
-      '体力': 475,
-      '水晶鞋': 1
-    },
-    princess_extra: 0,
-    princess_rate: 3, // 3 out of 1
-    maiden_rate: 5
-  */
+
   if (preset[choice]) {
     $("#goldgen").val(preset[choice].generate['金币']);
     $("#coingen").val(preset[choice].generate['星光币']);
@@ -455,6 +438,7 @@ generate: {
     $("#princessgen").val(preset[choice].princessExtra);
     $("#princessrate").val(preset[choice].princessRate);
     $("#maidenrate").val(preset[choice].maidenRate);
+    $("#desc").text(preset[choice].desc);
     config = preset[choice];
     if (calc) {
       selectPattern();
@@ -481,6 +465,7 @@ function updateConfig() {
   preset['custom'].princessExtra = parseSafe($("#princessgen"), 0, 100, 0);
   preset['custom'].princessRate = parseSafe($("#princessrate"), 1, 20, 1);
   preset['custom'].maidenRate = parseSafe($("#maidenrate"), 1, 20, 1);
+  $("#desc").text("自定义的数值，请根据你自己的个人情况如实填写。");
   config = preset['custom'];
   selectPattern();
 }
