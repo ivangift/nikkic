@@ -156,6 +156,27 @@ var convertSet = function() {
   return ret;
 }();
 
+var suitSet = function() {
+  ret = {}
+  for (var i in suits) {
+    var suitCate = suits[i][0];
+    var suit = suits[i][1];
+    var cate = suits[i][2];
+    var id = suits[i][3];
+    if (!ret[suitCate]) {
+      ret[suitCate] = {};
+    }
+    if (!ret[suitCate][suit]) {
+      ret[suitCate][suit] = [];
+    }
+    if (!clothesSet[cate][id]) {
+      alert("not found: " + cate + "," + id);
+    }
+    ret[suitCate][suit].push(clothesSet[cate][id]);
+  }
+  return ret;
+}();
+
 function drawCategory() {
   var dropdown = $("#category")[0];
   for (var i in CATEGORIES) {
@@ -165,11 +186,20 @@ function drawCategory() {
     option.value = category;
     dropdown.add(option);
   }
+  for (var cate in suitSet) {
+    var option = document.createElement('option');
+    option.text = "成就: " + cate;
+    option.value = cate;
+    dropdown.add(option);
+  }
   changeCategory();
 }
 
 function byName(a, b) {
   return a.name.localeCompare(b.name);
+}
+function byString(a, b) {
+  return a.localeCompare(b);
 }
 
 function changeCategory() {
@@ -182,25 +212,51 @@ function changeCategory() {
   option.disabled = "disabled";
   option.hidden = "hidden";
   dropdown.add(option);
-  toSort = [];
-  for (var i in patternSet[category]) {
-    if (!clothesSet[category][i]) continue;
-    toSort.push(clothesSet[category][i]);
+  if (patternSet[category]) {
+    var toSort = [];
+    for (var i in patternSet[category]) {
+      if (!clothesSet[category][i]) continue;
+      toSort.push(clothesSet[category][i]);
+    }
+    toSort.sort(byName);
+    for (var i in toSort) {
+      var option = document.createElement('option');
+      option.text = toSort[i].name;
+      option.value = toSort[i].id;
+      dropdown.add(option);
+    }
+  } else if (suitSet[category]) {
+    var toSort = [];
+    for (var i in suitSet[category]) {
+      toSort.push(i);
+    }
+    toSort.sort(byString);
+    for (var i in toSort) {
+      var suit = toSort[i];
+      var toSort2 = [];
+      for (var j in suitSet[category][suit]) {
+        var option = document.createElement('option');
+        option.text = suit + " - " + suitSet[category][suit][j].name;
+        option.value = suit + '-' + j;
+        dropdown.add(option);
+      }
+    }
   }
-  toSort.sort(byName);
-  for (var i in toSort) {
-    var option = document.createElement('option');
-    option.text = toSort[i].name;
-    option.value = toSort[i].id;
-    dropdown.add(option);
-  }
+  
   updateParam();
 }
 
 function selectPattern() {
   var category = $("#category").val();
   var id = $("#pattern").val();
-  drawTable(category, id);
+  if (suitSet[category]) {
+    var suit = id.split('-')[0];
+    var idx = id.split('-')[1];
+    var c = suitSet[category][suit][idx];
+    drawTable(suitSet[category][suit][idx].type.mainType, suitSet[category][suit][idx].id);
+  } else {
+    drawTable(category, id);
+  }
   updateParam();
 }
 
@@ -514,7 +570,7 @@ function summary(node) {
 }
 
 function taskList(nodes) {
-  var ret = "<table class='breakdown'><thead><tr><th>名称</th><th>来源</th><th>需要数量</th></tr></thead>";
+  var ret = "<table class='breakdown'><thead><tr><th>名称</th><th>来源</th><th>需求数量</th></tr></thead>";
   ret += "<tbody>";
   for (var i in nodes) {
     var node = nodes[i];

@@ -6,6 +6,7 @@ PATH = 'raw'
 evolve = 'evolve.csv'
 convert = 'convert.csv'
 merchant = 'merchant.csv'
+suits = 'suits.csv'
 
 def compatibility(name):
   if name == '上衣':
@@ -49,5 +50,18 @@ for row in reader:
   price = row[2]
   unit = row[3]
   writer.write("  ['%s', '%s', '%s', '%s'],\n" % (target, hint_target, price, unit))
+writer.write("];")
+writer.close()
+
+writer = open('suits.js', 'w');
+reader = csv.reader(open(PATH + "/" + suits))
+writer.write("var suits = [\n")
+reader.next()
+for row in reader:
+  category = row[0]
+  suit = row[1]
+  target = compatibility(row[3])
+  id = row[4]
+  writer.write("  ['%s', '%s', '%s', '%s'],\n" % (category, suit, target, id))
 writer.write("];")
 writer.close()
