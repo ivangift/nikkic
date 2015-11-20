@@ -514,7 +514,7 @@ function summary(node) {
 }
 
 function taskList(nodes) {
-  var ret = "<table><thead><tr><th>名称</th><th>来源</th><th>需要数量</th></tr></thead>";
+  var ret = "<table class='breakdown'><thead><tr><th>名称</th><th>来源</th><th>需要数量</th></tr></thead>";
   ret += "<tbody>";
   for (var i in nodes) {
     var node = nodes[i];
