@@ -547,7 +547,7 @@ function render(node, theme, layer) {
     tr.append("<td style='background: " + color + "'>" + name + "</td>"
       //+ "<td style='background: " + color + "'>" + node.id + "</td>"
       );
-    var input = $("<input type='textbox' size=5 value='" + node.inventory + "'/>");
+    var input = $("<input type='textbox' size=4 value='" + node.inventory + "'/>");
     tr.append($("<td style='background: " + color + "' class='inventory'>").append(input));
     tr.append("<td style='background: " + color + "' class='number'>" + number + "</td>"
       + "<td style='background: " + color + "'>" + node.category + "</td>"
