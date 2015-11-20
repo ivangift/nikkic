@@ -7,8 +7,20 @@ preset = {
 		  '体力': 475,
 		  '水晶鞋': 1
 		},
-		princess_extra: 0,
-		princess_rate: 3, // 3 out of 1
-		maiden_rate: 5
+		princessExtra: 0,
+		princessRate: 3, // 3 out of 1
+		maidenRate: 5,
+	},
+	'mock': {
+		desc: "",
+		generate: {
+			'金币': 123456,
+		  '星光币': 77,
+		  '体力': 1024,
+		  '水晶鞋': 5
+		},
+		princessExtra: 2,
+		princessRate: 2, // 2 out of 1
+		maidenRate: 4,
 	}
 };

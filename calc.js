@@ -1,5 +1,4 @@
 // calc.js
-var princess_rate = 3; // 3 out of 1
 
 var cost = {
   '1': {evolve: 1200, pattern: 800},
@@ -8,13 +7,6 @@ var cost = {
   '4': {evolve: 7000, pattern: 4000},
   '5': {evolve: 12000, pattern: 8000},
   '6': {evolve: 20000, pattern: 20000},
-};
-
-var generate = {
-  '金币': 96574,
-  '星光币': 45,
-  '体力': 475,
-  '水晶鞋': 1
 };
 
 var CATEGORIES = [
@@ -35,6 +27,8 @@ var palette = [
   ["#9999ff", "#b3b3ff", "#ccccff", "#e5e5ff"],
   ["#ff9999", "#ffb7b7", "#ffcccc", "#ffe5e5"]
 ];
+
+var config;
 
 function Inventory() {
   return {
@@ -333,7 +327,7 @@ function deps(parent) {
     parent.unit = c.unit;
   }
   if (c.source.indexOf('公') > 0) {
-    parent.cost = num * 6 * princess_rate; // on average 1 out of 3
+    parent.cost = num * 6 * config.princessRate;
     parent.unit = "体力";
   }
   var limited = 0;
@@ -342,14 +336,14 @@ function deps(parent) {
       limited ++;
     }
     if (c.sources[i].indexOf('少') > 0) {
-      parent.cost = num * 20; // on average 1 out of 5
+      parent.cost = num * 4 * config.maidenRate;
       parent.unit = "体力";
       limited = -1; // no limit
       break;
     }
   }
   if (limited > 0) {
-    parent.limit = Math.ceil(num * princess_rate / limited / 3);
+    parent.limit = Math.ceil(num * config.princessRate / limited / (3 + config.princessExtra));
   }
   if (!parent.cost || parent.cost == 0) {
     if (c.source.indexOf("迷") >= 0 || c.source.indexOf("幻") >= 0) {
@@ -422,6 +416,84 @@ function processSources() {
   }
 }
 
+function drawPreset() {
+  var dropdown = $("#preset")[0];
+  for (var i in preset) {
+    var option = document.createElement('option');
+    option.text = i;
+    option.value = i;
+    dropdown.add(option);
+  }
+  changePreset(false);
+}
+
+function changePreset(calc) {
+  var choice = $("#preset").val();
+  /**
+        <span class='config'>每日获取金币 <input id="goldgen" type='textbox' size=6></input></span>
+      <span class='config'>每日获取星光币 <input id="coingen" type='textbox' size=4></input></span>
+      <span class='config'>每日获取体力 <input id="hpgen" type='textbox' size=4></input></span>
+      <span class='config'>每日获取水晶鞋 <input id="shoegen" type='textbox' size=3></input></span>
+      <span class='config'>公主关购买次数 <input id="princessgen" type='textbox' size=2></input></span>
+      <span class='config'>公主关<input id="princessrate" type='textbox' size=2></input>掉1</span>
+      <span class='config'>少女关<input id="maidenrate" type='textbox' size=2></input>掉1</span>
+generate: {
+      '金币': 96574,
+      '星光币': 45,
+      '体力': 475,
+      '水晶鞋': 1
+    },
+    princess_extra: 0,
+    princess_rate: 3, // 3 out of 1
+    maiden_rate: 5
+  */
+  if (preset[choice]) {
+    $("#goldgen").val(preset[choice].generate['金币']);
+    $("#coingen").val(preset[choice].generate['星光币']);
+    $("#hpgen").val(preset[choice].generate['体力']);
+    $("#shoegen").val(preset[choice].generate['水晶鞋']);
+    $("#princessgen").val(preset[choice].princessExtra);
+    $("#princessrate").val(preset[choice].princessRate);
+    $("#maidenrate").val(preset[choice].maidenRate);
+    config = preset[choice];
+    if (calc) {
+      selectPattern();
+    }
+  }
+}
+
+function updateConfig() {
+  if ($("#preset option[value='custom']").length == 0) {
+    var option = document.createElement('option');
+    option.text = "自定义人物";
+    option.value = "custom";
+    $("#preset")[0].add(option);
+  }
+  $("#preset").val('custom');
+  if (!preset['custom']) {
+    preset['custom'] = {};
+    preset['custom'].generate = {};
+  }
+  preset['custom'].generate['金币'] = parseSafe($("#goldgen"), 1000, 1000000, 90000);
+  preset['custom'].generate['星光币'] = parseSafe($("#coingen"), 1, 1000, 45);
+  preset['custom'].generate['体力'] = parseSafe($("#hpgen"), 1, 10000, 450);
+  preset['custom'].generate['水晶鞋'] = parseSafe($("#shoegen"), 1, 100, 1);
+  preset['custom'].princessExtra = parseSafe($("#princessgen"), 0, 100, 0);
+  preset['custom'].princessRate = parseSafe($("#princessrate"), 1, 20, 1);
+  preset['custom'].maidenRate = parseSafe($("#maidenrate"), 1, 20, 1);
+  config = preset['custom'];
+  selectPattern();
+}
+
+function parseSafe(element, lowerbound, upperbound, def) {
+  var value = parseInt(element.val());
+  if (!value || value < lowerbound || value > upperbound) {
+    element.val(def);
+    return def;
+  }
+  return value;
+}
+
 function init() {
   if (url().indexOf("ivangift") > 0) {
     $(".announcement").append("By 玉人 and ip君, proof of our existence, and our memories. - Nov 2015");
@@ -429,6 +501,7 @@ function init() {
   var category = url("#category");
   var pattern = url("#pattern");
   processSources();
+  drawPreset();
   loadMerchant();
   drawCategory();
   loadInventory();
@@ -571,8 +644,8 @@ function summary(node) {
   }
   var ret = "<table>";
   for (var unit in sum) {
-    if (unit in generate) {
-      var days = Math.ceil(sum[unit] / generate[unit]);
+    if (unit in config.generate) {
+      var days = Math.ceil(sum[unit] / config.generate[unit]);
       ret += "<tr><td>" + unit + ": " + formatNumber(sum[unit]) + "</td><td>" + days + "天</td></tr>";
     } else {
       ret += "<tr><td>" + unit + "</td><td>" + sum[unit] + "天</td></tr>";
