@@ -550,7 +550,7 @@ function summary(node) {
   for (var unit in sum) {
     if (unit in generate) {
       var days = Math.ceil(sum[unit] / generate[unit]);
-      ret += "<tr><td>" + unit + ": " + $.number(sum[unit]) + "</td><td>" + days + "天</td></tr>";
+      ret += "<tr><td>" + unit + ": " + formatNumber(sum[unit]) + "</td><td>" + days + "天</td></tr>";
     } else {
       ret += "<tr><td>" + unit + "</td><td>" + sum[unit] + "天</td></tr>";
     }
@@ -567,6 +567,10 @@ function summary(node) {
     $("#breakdown").append("少女关掉落列表");
     $("#breakdown").append(taskList(maiden));
   }
+}
+
+function formatNumber(number) {
+  return numeral(number).format('0,0');
 }
 
 function taskList(nodes) {
