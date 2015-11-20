@@ -237,7 +237,7 @@ function changeCategory() {
       for (var j in suitSet[category][suit]) {
         var option = document.createElement('option');
         option.text = suit + " - " + suitSet[category][suit][j].name;
-        option.value = suit + '-' + j;
+        option.value = suitSet[category][suit][j].type.mainType + '-' + suitSet[category][suit][j].id;
         dropdown.add(option);
       }
     }
@@ -250,10 +250,9 @@ function selectPattern() {
   var category = $("#category").val();
   var id = $("#pattern").val();
   if (suitSet[category]) {
-    var suit = id.split('-')[0];
-    var idx = id.split('-')[1];
-    var c = suitSet[category][suit][idx];
-    drawTable(suitSet[category][suit][idx].type.mainType, suitSet[category][suit][idx].id);
+    var realcate = id.split('-')[0];
+    var realid = id.split('-')[1];
+    drawTable(realcate, realid);
   } else {
     drawTable(category, id);
   }
