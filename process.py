@@ -14,7 +14,6 @@ def compatibility(name):
   return name
 
 reader = csv.reader(open(PATH + "/" + evolve))
-reader.next()
 writer = open('evolve.js', 'w');
 writer.write("var evolve = [\n")
 for row in reader:

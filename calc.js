@@ -336,13 +336,12 @@ function deps(parent) {
     parent.cost = num * 6 * princess_rate; // on average 1 out of 3
     parent.unit = "体力";
   }
-  var sources = c.source.split("/");
   var limited = 0;
-  for (var i in sources) {
-    if (sources[i].indexOf('公') > 0) {
+  for (var i in c.sources) {
+    if (c.sources[i].indexOf('公') > 0) {
       limited ++;
     }
-    if (sources[i].indexOf('少') > 0) {
+    if (c.sources[i].indexOf('少') > 0) {
       parent.cost = num * 20; // on average 1 out of 5
       parent.unit = "体力";
       limited = -1; // no limit
@@ -400,13 +399,36 @@ function loadInventory() {
   }
 }
 
+function processSources() {
+  for (var i in clothes) {
+    var c = clothes[i];
+    var sources = c.source.split("/");
+    var tbd = [];
+    for (var i in sources) {
+      var evol = parseSource(sources[i], '进');
+      var remake = parseSource(sources[i], '定');
+
+      if (evol && clothesSet[c.type.mainType][evol]) {
+        tbd.push(clothesSet[c.type.mainType][evol].name + evolveSet[c.type.mainType][c.id].number + "进1");
+      } else if (remake && clothesSet[c.type.mainType][remake]) {
+        tbd.push(clothesSet[c.type.mainType][remake].name + "+"
+            + convertSet[c.type.mainType][c.id].num
+            + convertSet[c.type.mainType][c.id].source);
+      } else {
+        tbd.push(sources[i]);
+      }
+    }
+    c.sources = tbd;
+  }
+}
+
 function init() {
   if (url().indexOf("ivangift") > 0) {
     $(".announcement").append("By 玉人 and ip君, proof of our existence, and our memories. - Nov 2015");
   }
   var category = url("#category");
   var pattern = url("#pattern");
-  calcDependencies();
+  processSources();
   loadMerchant();
   drawCategory();
   loadInventory();
@@ -456,7 +478,7 @@ function render(node, theme, layer) {
     var input = $("<input type='textbox' size=5 value='" + node.inventory + "'/>");
     tr.append($("<td style='background: " + color + "' class='inventory'>").append(input));
     tr.append("<td style='background: " + color + "' class='number'>" + number + "</td>"
-      + "<td style='background: " + color + "'>" + c.source + "</td>"
+      + "<td style='background: " + color + "'>" + c.sources.join("/") + "</td>"
       + "<td style='background: " + color + "' class='cost'>" + cost + "</td>");
     $("#table tbody").append(tr);
 
@@ -583,7 +605,7 @@ function taskList(nodes) {
     var c = clothesSet[node.category][node.id];
     var name = c.name;
     var tr = "<tr><td>" + name + "</td>"
-      + "<td>" + c.source + "</td>"
+      + "<td>" + c.sources.join("/") + "</td>"
       + "<td>" + number + "</td></tr>";
     ret += tr;
   }
