@@ -424,6 +424,13 @@ function drawPreset() {
     option.value = i;
     dropdown.add(option);
   }
+  if (localStorage.custompreset) {
+    preset['custom'] = JSON.parse(localStorage.custompreset);
+    var option = document.createElement('option');
+    option.text = "自定义人物";
+    option.value = "custom";
+    dropdown.add(option);
+  }
   changePreset(false);
 }
 
@@ -467,6 +474,9 @@ function updateConfig() {
   preset['custom'].maidenRate = parseSafe($("#maidenrate"), 1, 20, 1);
   $("#desc").text("自定义的数值，请根据你自己的个人情况如实填写。");
   config = preset['custom'];
+  if (localStorage) {
+    localStorage.custompreset = JSON.stringify(preset['custom']);
+  }
   selectPattern();
 }
 
