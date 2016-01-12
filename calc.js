@@ -407,7 +407,7 @@ function processSources() {
       } else if (remake && clothesSet[c.type.mainType][remake]) {
         tbd.push(clothesSet[c.type.mainType][remake].name + "+"
             + convertSet[c.type.mainType][c.id].num
-            + convertSet[c.type.mainType][c.id].source.rawSource);
+            + convertSet[c.type.mainType][c.id].source);
       } else {
         tbd.push(sources[i]);
       }
