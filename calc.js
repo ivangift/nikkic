@@ -13,7 +13,7 @@ var CATEGORIES = [
   '发型',
   '连衣裙',
   '外套',
-  '上装',
+  '上衣',
   '下装',
   '袜子',
   '鞋子',
@@ -303,7 +303,7 @@ function deps(parent) {
       deps(child);
     }
   }
-  var evol = parseSource(c.source, '进');
+  var evol = parseSource(c.source.rawSource, '进');
   if (evol && clothesSet[c.type.mainType][evol]) {
     parent.cost = num * cost[clothesSet[c.type.mainType][evol].stars].evolve;
     parent.unit = '金币';
@@ -313,7 +313,7 @@ function deps(parent) {
     parent.addDeps(child, reqNum, num > 0);
     deps(child);
   }
-  var remake = parseSource(c.source, '定');
+  var remake = parseSource(c.source.rawSource, '定');
   if (remake && clothesSet[c.type.mainType][remake]) {
     parent.cost = num * convertSet[category][id].num * convertSet[category][id].price;
     parent.unit = '星光币';
@@ -326,7 +326,7 @@ function deps(parent) {
     parent.cost = c.price * num;
     parent.unit = c.unit;
   }
-  if (c.source.indexOf('公') > 0) {
+  if (c.source.rawSource.indexOf('公') > 0) {
     parent.cost = num * 6 * config.princessRate;
     parent.unit = "体力";
   }
@@ -346,9 +346,9 @@ function deps(parent) {
     parent.limit = Math.ceil(num * config.princessRate / limited / (3 + config.princessExtra));
   }
   if (!parent.cost || parent.cost == 0) {
-    if (c.source.indexOf("迷") >= 0 || c.source.indexOf("幻") >= 0) {
+    if (c.source.rawSource.indexOf("迷") >= 0 || c.source.rawSource.indexOf("幻") >= 0) {
       parent.luck = 1;
-    } else if (c.source.indexOf("成就") >= 0) {
+    } else if (c.source.rawSource.indexOf("成就") >= 0) {
       parent.effort = 1;
     }
   }
@@ -396,7 +396,7 @@ function loadInventory() {
 function processSources() {
   for (var i in clothes) {
     var c = clothes[i];
-    var sources = c.source.split("/");
+    var sources = c.source.sources;
     var tbd = [];
     for (var i in sources) {
       var evol = parseSource(sources[i], '进');
@@ -407,7 +407,7 @@ function processSources() {
       } else if (remake && clothesSet[c.type.mainType][remake]) {
         tbd.push(clothesSet[c.type.mainType][remake].name + "+"
             + convertSet[c.type.mainType][c.id].num
-            + convertSet[c.type.mainType][c.id].source);
+            + convertSet[c.type.mainType][c.id].source.rawSource);
       } else {
         tbd.push(sources[i]);
       }
@@ -630,10 +630,10 @@ function summary(node) {
     }
 
     var c = clothesSet[collector[i].category][collector[i].id];
-    if (c.source.indexOf('公') > 0 && collector[i].getNumber() > collector[i].inventory) {
+    if (c.source.rawSource.indexOf('公') > 0 && collector[i].getNumber() > collector[i].inventory) {
       princess.push(collector[i]);
     }
-    if (c.source.indexOf('少') > 0 && collector[i].getNumber() > collector[i].inventory) {
+    if (c.source.rawSource.indexOf('少') > 0 && collector[i].getNumber() > collector[i].inventory) {
       maiden.push(collector[i]);
     }
   }
