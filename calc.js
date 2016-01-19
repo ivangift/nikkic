@@ -331,11 +331,11 @@ function deps(parent) {
     parent.unit = "体力";
   }
   var limited = 0;
-  for (var i in c.sources) {
-    if (c.sources[i].indexOf('公') > 0) {
+  for (var i in c.source.sources) {
+    if (c.source.sources[i].indexOf('公') > 0) {
       limited ++;
     }
-    if (c.sources[i].indexOf('少') > 0) {
+    if (c.source.sources[i].indexOf('少') > 0) {
       parent.cost = num * 4 * config.maidenRate;
       parent.unit = "体力";
       limited = -1; // no limit
@@ -398,9 +398,9 @@ function processSources() {
     var c = clothes[i];
     var sources = c.source.sources;
     var tbd = [];
-    for (var i in sources) {
-      var evol = parseSource(sources[i], '进');
-      var remake = parseSource(sources[i], '定');
+    for (var j in sources) {
+      var evol = parseSource(sources[j], '进');
+      var remake = parseSource(sources[j], '定');
 
       if (evol && clothesSet[c.type.mainType][evol]) {
         tbd.push(clothesSet[c.type.mainType][evol].name + evolveSet[c.type.mainType][c.id].number + "进1");
@@ -409,7 +409,7 @@ function processSources() {
             + convertSet[c.type.mainType][c.id].num
             + convertSet[c.type.mainType][c.id].source);
       } else {
-        tbd.push(sources[i]);
+        tbd.push(sources[j]);
       }
     }
     c.sources = tbd;
@@ -642,6 +642,8 @@ function summary(node) {
     if (unit in config.generate) {
       var days = Math.ceil(sum[unit] / config.generate[unit]);
       ret += "<tr><td>" + unit + ": " + formatNumber(sum[unit]) + "</td><td>" + days + "天</td></tr>";
+    } else if (unit == "雪晶片") {
+      ret += "<tr><td>" + unit + ": " + formatNumber(sum[unit]) + "</td><td>" + "抓紧</td></tr>";
     } else {
       ret += "<tr><td>" + unit + "</td><td>" + sum[unit] + "天</td></tr>";
     }
