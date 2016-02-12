@@ -74,10 +74,10 @@ function calculate() {
   for (var i in suggestion) {
     player.skills.put(suggestion[i]);
   }
-  if (suggestion[0].cd < 15) {
+  if (suggestion[0] && suggestion[0].cd < 15) {
     suggestion.push(suggestion[0]);  
   }
-  if (suggestion[1].cd < 15) {
+  if (suggestion[1] && suggestion[1].cd < 15) {
     suggestion.push(suggestion[1]);  
   }
 
@@ -202,13 +202,13 @@ function logToKey(log) {
     }
   }
   if (log['挑剔的目光'] > 0) {
-    keys.push('挑剔的目光:' + log['挑剔的目光']);
+    keys.push('挑剔的目光' + log['挑剔的目光'] + '次');
   }
   if (log['圣诞礼物'] > 0) {
-    keys.push('圣诞礼物:' + log['圣诞礼物']);
+    keys.push('圣诞礼物' + log['圣诞礼物'] + '次');
   }
   if (log['灰姑娘时钟'] > 0) {
-    keys.push('灰姑娘时钟:' + log['灰姑娘时钟']);
+    keys.push('灰姑娘时钟' + log['灰姑娘时钟'] + '次');
   }
   if (keys.length == 0) {
     return "perfect";
