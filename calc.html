@@ -6,15 +6,18 @@
     <script type='text/javascript' charset="UTF-8" src='jquery.js'></script>
     <script type='text/javascript' charset="UTF-8" src='jquery.collapse.js'></script>
     <script type='text/javascript' charset="UTF-8" src='url.min.js'></script>
-    <script type='text/javascript' charset="UTF-8" src='chosen.jquery.min.js'></script>
+    <script type='text/javascript' charset="UTF-8" src='selectivity-full.js'></script>
     <script type='text/javascript' charset="UTF-8" src='../nikkistats/skills.js'></script>
     <script type='text/javascript' charset="UTF-8" src='../nikkistats/npc.js'></script>
     <script type='text/javascript' charset="UTF-8" src='calcx.js'></script>
     <link rel="stylesheet" href="../nikkistats/nikki.css">
-    <link rel="stylesheet" href="chosen.css">
+    <link rel="stylesheet" href="selectivity-full.css">
     <style>
       div {
         margin: 0.1em;
+      }
+      .playerSkills {
+        width: 40em;
       }
     </style>
   </head>
@@ -23,8 +26,7 @@
     <div id="enemy"></div>
     <div id="playerSuggestion"></div>
     <div id="player">
-      <select id="playerSkills" class="playerSkills" data-placeholder="按顺序选择技能" multiple="true">
-      </select>
+      <div id="playerSkills" class="selectivity-input playerSkills"></div>
       <div id="validation" class="red"></div>
       <button onClick="calculate()">Calculate</button>
     </div>

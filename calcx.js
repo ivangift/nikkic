@@ -10,31 +10,35 @@ function drawNpc() {
 }
 
 function drawSkill() {
-  var dropdown = $("#playerSkills")[0];
+  var skills = [];
   for (var s in skillSet) {
     if (s.indexOf("填充用技能") >= 0) {
       continue;
     }
-    var option = document.createElement('option');
-    option.text = s;
-    option.value = s;
-    dropdown.add(option);
+    skills.push(s);
   }
-  $("#playerSkills").chosen({
-    width: "40em",
-    max_selected_options: 4
+  $('#playerSkills').selectivity({
+    items: skills,
+    multiple: true,
+    placeholder: '按顺序选择技能'
   });
-
-  $('#playerSkills').on('change', function(evt, params) {
+  $('#playerSkills').on('change', function(evt) {
     validate();
+  });
+  $('#playerSkills').on('selectivity-opening', function(evt) {
+    if (getPlayerSkills().length >= 4) {
+      evt.preventDefault();
+    }
   });
 }
 
 function getPlayerSkills() {
-  var out=[];
-  $("#playerSkills_chosen span").each(function() {
-    out.push(skillSet[this.innerText]);
-  });
+
+  var out = [];
+  var skills = $('#playerSkills').selectivity("val");
+  for (var i in skills) {
+    out.push(skillSet[skills[i]]);
+  }
   return out;
 }
 
