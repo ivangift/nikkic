@@ -12,7 +12,7 @@ function drawNpc() {
 function drawSkill() {
   var skills = [];
   for (var s in skillSet) {
-    if (s.indexOf("填充用技能") >= 0) {
+    if (s.indexOf("短CD技能") >= 0) {
       continue;
     }
     skills.push(s);
